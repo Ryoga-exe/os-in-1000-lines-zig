@@ -35,7 +35,21 @@ pub fn build(b: *std.Build) void {
     const kernel_step = b.step("kernel", "Build the kernel");
     kernel_step.dependOn(&kernel.step);
 
-    const run = b.addRunArtifact(kernel);
-    const run_step = b.step("run", "run");
-    run_step.dependOn(&run.step);
+    const qemu_cmd = b.addSystemCommand(&.{
+        "qemu-system-riscv32",
+        "-machine",
+        "virt",
+        "-bios",
+        "default",
+        "-nographic",
+        "-serial",
+        "mon:stdio",
+        "--no-reboot",
+        "-kernel",
+        b.getInstallPath(.bin, kernel.name),
+    });
+    qemu_cmd.step.dependOn(b.getInstallStep());
+
+    const run_step = b.step("run", "Run the kernel on QEMU");
+    run_step.dependOn(&qemu_cmd.step);
 }
