@@ -29,6 +29,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    kernel.entry = .{ .symbol_name = "boot" };
     kernel.setLinkerScript(b.path("kernel.ld"));
     b.installArtifact(kernel);
 
