@@ -35,24 +35,44 @@ fn sbi_call(
     fid: usize,
     eid: usize,
 ) SbiError!usize {
+    const arch = builtin.target.cpu.arch;
+
     var value: usize = undefined;
 
-    // RV32
-    const err: isize = asm volatile (
-        \\ ecall
-        \\ sw a1, 0(%[valp])
-        : [err] "={a0}" (-> isize),
-        : [a0] "{a0}" (arg0),
-          [a1] "{a1}" (arg1),
-          [a2] "{a2}" (arg2),
-          [a3] "{a3}" (arg3),
-          [a4] "{a4}" (arg4),
-          [a5] "{a5}" (arg5),
-          [a6] "{a6}" (fid),
-          [a7] "{a7}" (eid),
-          [valp] "r" (&value),
-        : "memory"
-    );
+    const err: isize = switch (arch) {
+        .riscv32 => asm volatile (
+            \\ ecall
+            \\ sw a1, 0(%[valp])
+            : [err] "={a0}" (-> isize),
+            : [a0] "{a0}" (arg0),
+              [a1] "{a1}" (arg1),
+              [a2] "{a2}" (arg2),
+              [a3] "{a3}" (arg3),
+              [a4] "{a4}" (arg4),
+              [a5] "{a5}" (arg5),
+              [a6] "{a6}" (fid),
+              [a7] "{a7}" (eid),
+              [valp] "r" (&value),
+            : "memory"
+        ),
+        .riscv64 => asm volatile (
+            \\ ecall
+            \\ sd a1, 0(%[valp])
+            : [err] "={a0}" (-> isize),
+            : [a0] "{a0}" (arg0),
+              [a1] "{a1}" (arg1),
+              [a2] "{a2}" (arg2),
+              [a3] "{a3}" (arg3),
+              [a4] "{a4}" (arg4),
+              [a5] "{a5}" (arg5),
+              [a6] "{a6}" (fid),
+              [a7] "{a7}" (eid),
+              [valp] "r" (&value),
+            : "memory"
+        ),
+        else => @compileError(""),
+    };
+
     return switch (err) {
         0 => value, // SBI_SUCCESS
         -1 => SbiError.Failed,
