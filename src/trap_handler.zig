@@ -117,7 +117,7 @@ pub export fn handle_trap(f: *anyopaque) void {
     const stval32: u32 = @truncate(csr.readCSR("stval"));
     const sepc32: u32 = @truncate(csr.readCSR("sepc"));
 
-    std.log.err("unexpected trap scause={x}, stval={x}, sepc={x}", .{
+    std.log.err("unexpected trap scause={X:0>8}, stval={X:0>8}, sepc={X:0>8}", .{
         scause32,
         stval32,
         sepc32,
