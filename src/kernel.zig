@@ -1,5 +1,8 @@
 const builtin = @import("builtin");
 const sbi = @import("sbi.zig");
+const csr = @import("csr.zig");
+
+const trap_handler = @import("trap_handler.zig");
 
 pub const std_options = @import("log.zig").default_log_options;
 pub const panic = @import("panic.zig").panic_fn;
@@ -16,15 +19,14 @@ pub export fn kernel_main() callconv(.C) noreturn {
     const bss_ptr: [*]u8 = @ptrFromInt(start);
     @memset(bss_ptr[0..len], 0);
 
-    @panic("booted!");
+    const console = sbi.Console{};
+    const writer = console.writer();
+    writer.print("\n\nHello World!\n", .{}) catch {};
 
-    // const console = sbi.Console{};
-    // const writer = console.writer();
-    // writer.print("\n\nHello World!\n", .{}) catch {};
-    //
-    // while (true) {
-    //     asm volatile ("wfi");
-    // }
+    csr.writeCSR("stvec", @intFromPtr(&trap_handler.kernel_entry));
+    asm volatile ("unimp");
+
+    unreachable;
 }
 
 pub export fn boot() linksection(".text.boot") callconv(.naked) noreturn {
