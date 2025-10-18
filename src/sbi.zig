@@ -50,7 +50,7 @@ fn call(
               [a6] "{a6}" (fid),
               [a7] "{a7}" (eid),
               [valp] "r" (&value),
-            : "memory"
+            : .{ .memory = true }
         ),
         .riscv64 => asm volatile (
             \\ ecall
@@ -65,7 +65,7 @@ fn call(
               [a6] "{a6}" (fid),
               [a7] "{a7}" (eid),
               [valp] "r" (&value),
-            : "memory"
+            : .{ .memory = true }
         ),
         else => @compileError(""),
     };

@@ -11,7 +11,7 @@ extern var __bss: u8;
 extern var __bss_end: u8;
 extern var __stack_top: u8;
 
-pub export fn kernel_main() callconv(.C) noreturn {
+pub export fn kernel_main() callconv(.c) noreturn {
     const start = @intFromPtr(&__bss);
     const end = @intFromPtr(&__bss_end);
     const len: usize = end - start;
@@ -35,6 +35,5 @@ pub export fn boot() linksection(".text.boot") callconv(.naked) noreturn {
         \\ j kernel_main
         :
         : [stack] "r" (&__stack_top),
-        : "memory"
-    );
+        : .{ .memory = true });
 }

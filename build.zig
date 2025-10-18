@@ -24,9 +24,11 @@ pub fn build(b: *std.Build) void {
 
     const kernel = b.addExecutable(.{
         .name = "kernel.elf",
-        .root_source_file = b.path("src/kernel.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.addModule("kernel", .{
+            .root_source_file = b.path("src/kernel.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     kernel.entry = .{ .symbol_name = "boot" };
